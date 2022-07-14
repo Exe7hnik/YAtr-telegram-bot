@@ -4,13 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Example;
-import ru.atroshenko.telegrambot.entities.Category;
-import ru.atroshenko.telegrambot.entities.Client;
-import ru.atroshenko.telegrambot.entities.Product;
-import ru.atroshenko.telegrambot.repositories.CategoryRepository;
-import ru.atroshenko.telegrambot.repositories.ClientRepository;
-import ru.atroshenko.telegrambot.repositories.ProductRepository;
-import ru.atroshenko.telegrambot.Constants.CategoryNames;
+import ru.atroshenko.telegrambot.entities.*;
+import ru.atroshenko.telegrambot.repositories.*;
+import ru.atroshenko.telegrambot.Constants.*;
 
 @SpringBootTest
 public class FillingTests {
@@ -23,6 +19,12 @@ public class FillingTests {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ClientOrderRepository clientOrderRepository;
+
+    @Autowired
+    private OrderProductRepository orderProductRepository;
 
     private Category createSaveCategory(String name, Category parent) {
         Category category = new Category();
@@ -44,6 +46,35 @@ public class FillingTests {
         product.setDescription(description);
         product.setCategory(category);
         productRepository.save(product);
+    }
+
+    private void createSaveClient(String fullName, String address, String phoneNumber, Long externalId) {
+        Client client = new Client();
+        client.setFullName(fullName);
+        client.setAddress(address);
+        client.setPhoneNumber(phoneNumber);
+        client.setExternalId(externalId);
+        clientRepository.save(client);
+    }
+
+    private Client getClientByName(String name) {
+        return clientRepository.getClientByFullName(name);
+    }
+
+    private void createSaveClientOrder(Integer status, Double total, Client client) {
+        ClientOrder clientOrder = new ClientOrder();
+        clientOrder.setStatus(status);
+        clientOrder.setTotal(total);
+        clientOrder.setClient(client);
+        clientOrderRepository.save(clientOrder);
+    }
+
+    private void createSaveOrderProduct(ClientOrder clientOrder, Product product, Long countProduct) {
+        OrderProduct orderProduct1 = new OrderProduct();
+        orderProduct1.setClientOrder(clientOrder);
+        orderProduct1.setProduct(product);
+        orderProduct1.setCountProduct(countProduct);
+        orderProductRepository.save(orderProduct1);
     }
 
     /**
@@ -121,24 +152,37 @@ public class FillingTests {
     }
 
     /**
-     * Создание двух клиентов
+     * Создание клиентов
      */
     @Test
-    public void createTwoClients() {
+    public void createClients() {
         clientRepository.deleteAll();
 
-        Client client1 = new Client();
-        client1.setAddress("address1");
-        client1.setPhoneNumber("123");
-        client1.setExternalId(1L);
-        client1.setFullName("fullName1");
-        clientRepository.save(client1);
+        createSaveClient(ClientNames.CLIENT1, ClientAddress.ADDRESS1, ClientPhones.PHONE1, 1L);
+        createSaveClient(ClientNames.CLIENT2, ClientAddress.ADDRESS2, ClientPhones.PHONE2, 2L);
+        createSaveClient(ClientNames.CLIENT3, ClientAddress.ADDRESS3, ClientPhones.PHONE3, 3L);
+    }
 
-        Client client2 = new Client();
-        client2.setAddress("address1");
-        client2.setExternalId(2L);
-        client2.setPhoneNumber("321");
-        client2.setFullName("fullName2");
-        clientRepository.save(client2);
+    /**
+     * Создание заказов клиентов
+     */
+    @Test
+    public void createClientOrders() {
+        clientOrderRepository.deleteAll();
+
+        createSaveClientOrder(1, 123.5, getClientByName(ClientNames.CLIENT1));
+        createSaveClientOrder(2, 234.5, getClientByName(ClientNames.CLIENT2));
+        createSaveClientOrder(1, 345.5, getClientByName(ClientNames.CLIENT3));
+        createSaveClientOrder(2, 456.5, getClientByName(ClientNames.CLIENT1));
+    }
+
+    @Test
+    public void createOrderProducts() {
+        orderProductRepository.deleteAll();
+
+        createSaveOrderProduct(clientOrderRepository.getById(1L), productRepository.getByName("Классический ролл"), 1L);
+        createSaveOrderProduct(clientOrderRepository.getById(2L), productRepository.getByName("Классический ролл2"), 2L);
+        createSaveOrderProduct(clientOrderRepository.getById(3L), productRepository.getByName("Классический ролл3"), 3L);
+        createSaveOrderProduct(clientOrderRepository.getById(1L), productRepository.getByName("Классический ролл"), 1L);
     }
 }

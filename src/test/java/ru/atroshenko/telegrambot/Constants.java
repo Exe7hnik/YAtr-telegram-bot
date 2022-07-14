@@ -18,4 +18,23 @@ public interface Constants {
         String JUICE = "Соки";
         String OTHER = "Другие";
     }
+
+    interface ClientNames {
+        String CLIENT1 = "client1 FullName";
+        String CLIENT2 = "client2 FullName";
+        String CLIENT3 = "client3 FullName";
+    }
+
+    interface ClientAddress {
+        String ADDRESS1 = "client 1 address";
+        String ADDRESS2 = "client 2 address";
+        String ADDRESS3 = "client 3 address";
+    }
+
+    interface ClientPhones {
+        String PHONE1 = "PhoneNumber1";
+        String PHONE2 = "PhoneNumber2";
+        String PHONE3 = "PhoneNumber3";
+    }
+
 }
